@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/distance",
-      "destination": "/api/server.js"
+      "destination": "/api/distance.js"
     }
   ]
 }

@@ -1,17 +1,15 @@
-import express from 'express';
-import fetch from 'node-fetch';
-import cors from 'cors';
-import dotenv from 'dotenv';
+export default async function handler(req, res) {
+  // Enable CORS
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
 
-dotenv.config();
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
 
-const app = express();
-const PORT = process.env.PORT || 3001;
-
-app.use(cors());
-app.use(express.json());
-
-app.get('/api/distance', async (req, res) => {
   try {
     const { origin, destination } = req.query;
 
@@ -41,7 +39,7 @@ app.get('/api/distance', async (req, res) => {
       });
     }
 
-    res.json(data);
+    res.status(200).json(data);
 
   } catch (error) {
     console.error('Distance API error:', error);
@@ -50,12 +48,4 @@ app.get('/api/distance', async (req, res) => {
       message: error.message 
     });
   }
-});
-
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-app.listen(PORT, () => {
-  console.log(`API server running on port ${PORT}`);
-});
+}

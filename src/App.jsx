@@ -85,35 +85,11 @@ function App() {
     setResult(null);
 
     try {
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-      
-      if (!apiKey) {
-        // Fallback to manual entry
-        const distance = prompt('Enter distance in km (Google Maps API not configured):');
-        if (!distance || isNaN(distance)) {
-          throw new Error('Invalid distance entered');
-        }
-        
-        const distanceKm = parseFloat(distance);
-        const durationMin = Math.round((distanceKm / 40) * 60);
-        const pricing = calculateDeliveryCost(distanceKm, orderValue);
-
-        setResult({
-          distance: distanceKm.toFixed(1),
-          duration: durationMin,
-          distanceText: `${distanceKm.toFixed(1)} km`,
-          durationText: `${durationMin} min`,
-          ...pricing
-        });
-        
-        setLoading(false);
-        return;
-      }
-
       const response = await fetch(`/api/distance?origin=${encodeURIComponent(originAddress)}&destination=${encodeURIComponent(destinationAddress)}`);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch distance data');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch distance data');
       }
 
       const data = await response.json();

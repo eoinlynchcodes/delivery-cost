@@ -1,18 +1,8 @@
 {
-  "buildCommand": "npm install && npm run build",
-  "outputDirectory": "dist",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "framework": "vite",
   "rewrites": [
     {
-      "source": "/api/(.*)",
+      "source": "/api/distance",
       "destination": "/api/server.js"
     }
-  ],
-  "functions": {
-    "api/server.js": {
-      "runtime": "nodejs20.x"
-    }
-  }
+  ]
 }

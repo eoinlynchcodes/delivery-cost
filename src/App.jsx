@@ -6,9 +6,6 @@ const DEFAULT_CONFIG = {
   costPerKm: 1.25,
   freeDeliveryThreshold: 400,
   originPostcode: 'N91PT7W',
-  baseLoadingTime: 15,
-  baseUnloadingTime: 10,
-  driverHourlyRate: 30,
   fuelCostPerKm: 0.40,
   wearTearPerKm: 0.10,
   margin: 0
@@ -42,21 +39,16 @@ function App() {
   };
 
   const calculateDeliveryCost = (distanceKm, orderVal = 0) => {
-    const loadingCost = (config.baseLoadingTime / 60) * config.driverHourlyRate;
-    const unloadingCost = (config.baseUnloadingTime / 60) * config.driverHourlyRate;
-    const baseCost = loadingCost + unloadingCost;
+    const totalCostPerKm = config.fuelCostPerKm + config.wearTearPerKm;
 
-    const driverTimePerKm = (1 / 40) * config.driverHourlyRate;
-    const totalCostPerKm = config.fuelCostPerKm + config.wearTearPerKm + driverTimePerKm;
-
-    const totalCost = baseCost + (distanceKm * totalCostPerKm);
+    const distanceCost = distanceKm * totalCostPerKm;
+    const totalCost = distanceCost;
     const costWithMargin = totalCost * (1 + config.margin / 100);
     const deliveryFee = Math.max(config.minimumFee, costWithMargin);
     const finalFee = orderVal >= config.freeDeliveryThreshold ? 0 : deliveryFee;
 
     return {
-      baseCost: baseCost.toFixed(2),
-      kmCost: (distanceKm * totalCostPerKm).toFixed(2),
+      kmCost: distanceCost.toFixed(2),
       totalCost: totalCost.toFixed(2),
       margin: config.margin,
       costWithMargin: costWithMargin.toFixed(2),
@@ -65,11 +57,8 @@ function App() {
       freeDelivery: finalFee === 0,
       finalFee: finalFee.toFixed(2),
       breakdown: {
-        loadingCost: loadingCost.toFixed(2),
-        unloadingCost: unloadingCost.toFixed(2),
         fuelCost: (distanceKm * config.fuelCostPerKm).toFixed(2),
         wearTear: (distanceKm * config.wearTearPerKm).toFixed(2),
-        driverTimeCost: (distanceKm * driverTimePerKm).toFixed(2)
       }
     };
   };
@@ -205,22 +194,6 @@ function App() {
 
             <div className="calculation-breakdown">
               <h3>Cost Breakdown</h3>
-              
-              <div className="breakdown-section">
-                <h4>Base Costs (Fixed per Delivery)</h4>
-                <div className="breakdown-item">
-                  <span>Loading ({config.baseLoadingTime} min @ €{config.driverHourlyRate}/hr):</span>
-                  <span>€{result.breakdown.loadingCost}</span>
-                </div>
-                <div className="breakdown-item">
-                  <span>Unloading ({config.baseUnloadingTime} min @ €{config.driverHourlyRate}/hr):</span>
-                  <span>€{result.breakdown.unloadingCost}</span>
-                </div>
-                <div className="breakdown-item subtotal">
-                  <span>Base Cost Subtotal:</span>
-                  <span>€{result.baseCost}</span>
-                </div>
-              </div>
 
               <div className="breakdown-section">
                 <h4>Distance-Based Costs ({result.distance} km)</h4>
@@ -231,10 +204,6 @@ function App() {
                 <div className="breakdown-item">
                   <span>Wear & Tear (€{config.wearTearPerKm}/km):</span>
                   <span>€{result.breakdown.wearTear}</span>
-                </div>
-                <div className="breakdown-item">
-                  <span>Driver Time (€{config.driverHourlyRate}/hr @ 40km/hr avg):</span>
-                  <span>€{result.breakdown.driverTimeCost}</span>
                 </div>
                 <div className="breakdown-item subtotal">
                   <span>Distance Cost Subtotal:</span>
@@ -250,7 +219,7 @@ function App() {
                 
                 {result.minimumApplied && (
                   <div className="breakdown-item minimum-applied">
-                    <span>Minimum Fee Applied:</span>
+                    <span>Minimum Flat Fee Applied:</span>
                     <span>€{config.minimumFee}</span>
                   </div>
                 )}
@@ -266,13 +235,12 @@ function App() {
               <h3>Pricing Formula</h3>
               <div className="formula-box">
                 <code>
-                  Delivery Fee = max(€{config.minimumFee}, Base Cost + Distance × €{config.costPerKm}/km)
+                  Delivery Fee = max(€{config.minimumFee}, Distance × (Fuel + Wear & Tear per km))
                 </code>
               </div>
               <p className="formula-notes">
-                <strong>How it works:</strong> We calculate the true cost of delivery by adding fixed costs 
-                (loading/unloading time) to distance-based costs (fuel, wear, driver time). 
-                The final fee is always at least €{config.minimumFee}, even for very short distances.
+                <strong>How it works:</strong> We calculate the true cost of delivery based on distance (fuel and vehicle wear). 
+                A flat minimum fee of €{config.minimumFee} covers all short-distance deliveries and loading/unloading time.
                 {config.freeDeliveryThreshold > 0 && ` Orders over €${config.freeDeliveryThreshold} qualify for free delivery.`}
               </p>
             </div>
@@ -310,35 +278,6 @@ function App() {
                   step="1"
                   value={config.freeDeliveryThreshold}
                   onChange={(e) => updateConfig('freeDeliveryThreshold', e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="setting-group">
-              <h3>Time & Labor</h3>
-              <div className="input-group">
-                <label>Loading Time (minutes)</label>
-                <input
-                  type="number"
-                  value={config.baseLoadingTime}
-                  onChange={(e) => updateConfig('baseLoadingTime', e.target.value)}
-                />
-              </div>
-              <div className="input-group">
-                <label>Unloading Time (minutes)</label>
-                <input
-                  type="number"
-                  value={config.baseUnloadingTime}
-                  onChange={(e) => updateConfig('baseUnloadingTime', e.target.value)}
-                />
-              </div>
-              <div className="input-group">
-                <label>Driver Hourly Rate (€)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={config.driverHourlyRate}
-                  onChange={(e) => updateConfig('driverHourlyRate', e.target.value)}
                 />
               </div>
             </div>

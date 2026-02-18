@@ -403,19 +403,24 @@ h1 {
   gap: 0.5rem;
 }
 
-.save-name-input {
+.save-quote-panel .save-name-input,
+input.save-name-input {
   flex: 1;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #86efac;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  background: white;
+  width: auto !important;
+  padding: 0.5rem 0.75rem !important;
+  border: 2px solid #86efac !important;
+  border-radius: 6px !important;
+  font-size: 0.95rem !important;
+  background: white !important;
+  color: var(--text) !important;
+  pointer-events: all !important;
 }
 
-.save-name-input:focus {
-  outline: none;
-  border-color: #16a34a;
-  box-shadow: 0 0 0 2px #dcfce7;
+.save-quote-panel .save-name-input:focus,
+input.save-name-input:focus {
+  outline: none !important;
+  border-color: #16a34a !important;
+  box-shadow: 0 0 0 2px #dcfce7 !important;
 }
 
 .save-btn {
@@ -602,4 +607,61 @@ h1 {
   font-weight: 700 !important;
   color: var(--primary) !important;
   font-size: 0.95rem !important;
+}
+
+/* ─────────────────────────────────────────
+   Save label & Inline Rename
+───────────────────────────────────────── */
+.save-label {
+  font-size: 0.82rem;
+  color: #4b7c5e;
+  margin: 0 0 0.6rem 0;
+}
+
+.quote-name-area {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.quote-name-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.quote-name-btn:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.rename-hint {
+  font-size: 0.75rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.quote-name-btn:hover .rename-hint {
+  opacity: 1;
+}
+
+.rename-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.25rem 0.5rem !important;
+  border: 2px solid white !important;
+  border-radius: 4px !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  background: rgba(255,255,255,0.95) !important;
+  color: var(--primary-dark) !important;
+  width: auto !important;
+  outline: none !important;
 }

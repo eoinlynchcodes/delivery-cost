@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 const DEFAULT_CONFIG = {
-  minimumFee: 20,
+  minimumFee: 15,
   costPerKm: 1.25,
   freeDeliveryThreshold: 400,
   originPostcode: 'N91PT7W',
@@ -338,20 +338,6 @@ function App() {
               </div>
             </div>
 
-            <div className="formula-explanation">
-              <h3>Pricing Formula</h3>
-              <div className="formula-box">
-                <code>
-                  Delivery Fee = max(€{config.minimumFee}, Distance × (Fuel + Wear & Tear per km))
-                </code>
-              </div>
-              <p className="formula-notes">
-                <strong>How it works:</strong> We calculate the true cost of delivery based on distance (fuel and vehicle wear). 
-                A flat minimum fee of €{config.minimumFee} covers all short-distance deliveries and loading/unloading time.
-                {config.freeDeliveryThreshold > 0 && ` Orders over €${config.freeDeliveryThreshold} qualify for free delivery.`}
-              </p>
-            </div>
-
             {/* ── Save Quote Panel ── */}
             <div className="save-quote-panel">
               <h3>💾 Save This Quote</h3>
@@ -382,6 +368,21 @@ function App() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* ── Pricing Formula (always visible) ── */}
+      <div className="formula-explanation">
+        <h3>Pricing Formula</h3>
+        <div className="formula-box">
+          <code>
+            Delivery Fee = max(€{config.minimumFee}, Distance × (Fuel + Wear &amp; Tear per km))
+          </code>
+        </div>
+        <p className="formula-notes">
+          <strong>How it works:</strong> We calculate the true cost of delivery based on distance (fuel and vehicle wear).
+          A flat minimum fee of €{config.minimumFee} covers all short-distance deliveries and loading/unloading time.
+          {config.freeDeliveryThreshold > 0 && ` Orders over €${config.freeDeliveryThreshold} qualify for free delivery.`}
+        </p>
       </div>
 
       {/* ── Saved Quotes Section ── */}

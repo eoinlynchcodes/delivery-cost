@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 const DEFAULT_CONFIG = {
-  minimumFee: 15,
+  minimumFee: 20,
   costPerKm: 1.25,
   freeDeliveryThreshold: 400,
   originPostcode: 'N91PT7W',
@@ -65,25 +65,22 @@ function App() {
   };
 
   const calculateDeliveryCost = (distanceKm, orderVal = 0) => {
-    const totalCostPerKm = config.fuelCostPerKm + config.wearTearPerKm;
-    const distanceCost = distanceKm * totalCostPerKm;
-    const totalCost = distanceCost;
-    const costWithMargin = totalCost * (1 + config.margin / 100);
-    const deliveryFee = Math.max(config.minimumFee, costWithMargin);
+    const costPerKm = config.fuelCostPerKm + config.wearTearPerKm;
+    const distanceCost = distanceKm * costPerKm;
+    const deliveryFee = config.minimumFee + distanceCost;
     const finalFee = orderVal >= config.freeDeliveryThreshold ? 0 : deliveryFee;
 
     return {
-      kmCost: distanceCost.toFixed(2),
-      totalCost: totalCost.toFixed(2),
-      margin: config.margin,
-      costWithMargin: costWithMargin.toFixed(2),
-      minimumApplied: deliveryFee === config.minimumFee,
+      costPerKm: costPerKm.toFixed(2),
+      distanceCost: distanceCost.toFixed(2),
       deliveryFee: deliveryFee.toFixed(2),
       freeDelivery: finalFee === 0,
       finalFee: finalFee.toFixed(2),
       breakdown: {
+        baseFee: config.minimumFee.toFixed(2),
         fuelCost: (distanceKm * config.fuelCostPerKm).toFixed(2),
         wearTear: (distanceKm * config.wearTearPerKm).toFixed(2),
+        distanceCost: distanceCost.toFixed(2),
       }
     };
   };
@@ -301,36 +298,23 @@ function App() {
 
             <div className="calculation-breakdown">
               <h3>Cost Breakdown</h3>
-
               <div className="breakdown-section">
-                <h4>Distance-Based Costs ({result.distance} km)</h4>
                 <div className="breakdown-item">
-                  <span>Fuel (€{config.fuelCostPerKm}/km):</span>
+                  <span>Base Fee:</span>
+                  <span>€{result.breakdown.baseFee}</span>
+                </div>
+                <div className="breakdown-item">
+                  <span>Fuel (€{config.fuelCostPerKm}/km × {result.distance} km):</span>
                   <span>€{result.breakdown.fuelCost}</span>
                 </div>
                 <div className="breakdown-item">
-                  <span>Wear & Tear (€{config.wearTearPerKm}/km):</span>
+                  <span>Wear & Tear (€{config.wearTearPerKm}/km × {result.distance} km):</span>
                   <span>€{result.breakdown.wearTear}</span>
                 </div>
                 <div className="breakdown-item subtotal">
-                  <span>Distance Cost Subtotal:</span>
-                  <span>€{result.kmCost}</span>
+                  <span>Distance Cost ({result.costPerKm}/km × {result.distance} km):</span>
+                  <span>€{result.distanceCost}</span>
                 </div>
-              </div>
-
-              <div className="breakdown-section">
-                <div className="breakdown-item total">
-                  <span>Total Cost:</span>
-                  <span>€{result.totalCost}</span>
-                </div>
-                
-                {result.minimumApplied && (
-                  <div className="breakdown-item minimum-applied">
-                    <span>Minimum Flat Fee Applied:</span>
-                    <span>€{config.minimumFee}</span>
-                  </div>
-                )}
-
                 <div className="breakdown-item final-total">
                   <span>Customer Pays:</span>
                   <span>€{result.deliveryFee}</span>
@@ -375,12 +359,12 @@ function App() {
         <h3>Pricing Formula</h3>
         <div className="formula-box">
           <code>
-            Delivery Fee = max(€{config.minimumFee}, Distance × (Fuel + Wear &amp; Tear per km))
+            Delivery Fee = €{config.minimumFee} + (Distance × (Fuel + Wear & Tear per km))
           </code>
         </div>
         <p className="formula-notes">
           <strong>How it works:</strong> We calculate the true cost of delivery based on distance (fuel and vehicle wear).
-          A flat minimum fee of €{config.minimumFee} covers all short-distance deliveries and loading/unloading time.
+          A flat base fee of €{config.minimumFee} covers loading/unloading time, plus a per-km rate combining fuel and vehicle wear & tear.
           {config.freeDeliveryThreshold > 0 && ` Orders over €${config.freeDeliveryThreshold} qualify for free delivery.`}
         </p>
       </div>
@@ -456,16 +440,11 @@ function App() {
                       <span>Distance:</span><span>{q.distance} km ({q.duration} min)</span>
                     </div>
                     <div className="quote-row">
-                      <span>Fuel:</span><span>€{q.breakdown.fuelCost}</span>
+                      <span>Base Fee:</span><span>€{q.breakdown.baseFee}</span>
                     </div>
                     <div className="quote-row">
-                      <span>Wear & Tear:</span><span>€{q.breakdown.wearTear}</span>
+                      <span>Distance Cost:</span><span>€{q.breakdown.distanceCost}</span>
                     </div>
-                    {q.minimumApplied && (
-                      <div className="quote-row muted">
-                        <span>Minimum fee applied</span>
-                      </div>
-                    )}
                     <div className="quote-row quote-total">
                       <span>Delivery Fee:</span>
                       <strong>{q.freeDelivery ? 'FREE' : `€${q.finalFee}`}</strong>

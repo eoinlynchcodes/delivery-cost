@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 const DEFAULT_CONFIG = {
@@ -35,6 +35,11 @@ function App() {
   const [showSaved, setShowSaved] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  // Inline rename state
+  const [editingNameId, setEditingNameId] = useState(null);
+  const [editingNameValue, setEditingNameValue] = useState('');
+  const renameInputRef = useRef(null);
+
   useEffect(() => {
     localStorage.setItem('deliveryPricingConfig', JSON.stringify(config));
   }, [config]);
@@ -42,6 +47,13 @@ function App() {
   useEffect(() => {
     localStorage.setItem('savedDeliveryQuotes', JSON.stringify(savedQuotes));
   }, [savedQuotes]);
+
+  useEffect(() => {
+    if (editingNameId && renameInputRef.current) {
+      renameInputRef.current.focus();
+      renameInputRef.current.select();
+    }
+  }, [editingNameId]);
 
   const updateConfig = (key, value) => {
     setConfig(prev => ({ ...prev, [key]: parseFloat(value) || value }));
@@ -85,6 +97,7 @@ function App() {
     setLoading(true);
     setError(null);
     setResult(null);
+    setSaveSuccess(false);
 
     try {
       const response = await fetch(`/api/distance?origin=${encodeURIComponent(originAddress)}&destination=${encodeURIComponent(destinationAddress)}`);
@@ -120,11 +133,10 @@ function App() {
         ...pricing
       });
 
-      // Pre-fill save name from destination
+      // Suggest name from first part of destination
       const suggestedName = destinationAddress.split(',')[0].trim();
       setSaveName(suggestedName);
       setSaveError('');
-      setSaveSuccess(false);
 
     } catch (err) {
       setError(err.message);
@@ -134,7 +146,8 @@ function App() {
   };
 
   const handleSaveQuote = () => {
-    if (!saveName.trim()) {
+    const trimmed = saveName.trim();
+    if (!trimmed) {
       setSaveError('Please enter a name for this quote.');
       return;
     }
@@ -142,7 +155,7 @@ function App() {
 
     const quote = {
       id: Date.now(),
-      name: saveName.trim(),
+      name: trimmed,
       savedAt: new Date().toLocaleDateString('en-IE', { day: '2-digit', month: 'short', year: 'numeric' }),
       destination: result.destination,
       orderValue: result.orderValue,
@@ -170,6 +183,25 @@ function App() {
     if (window.confirm('Delete all saved quotes?')) {
       setSavedQuotes([]);
     }
+  };
+
+  const startRename = (quote) => {
+    setEditingNameId(quote.id);
+    setEditingNameValue(quote.name);
+  };
+
+  const commitRename = () => {
+    const trimmed = editingNameValue.trim();
+    if (trimmed) {
+      setSavedQuotes(prev => prev.map(q => q.id === editingNameId ? { ...q, name: trimmed } : q));
+    }
+    setEditingNameId(null);
+    setEditingNameValue('');
+  };
+
+  const cancelRename = () => {
+    setEditingNameId(null);
+    setEditingNameValue('');
   };
 
   return (
@@ -310,22 +342,28 @@ function App() {
               <h3>💾 Save This Quote</h3>
               {saveSuccess ? (
                 <div className="save-success">
-                  ✅ Quote saved! <button className="link-btn" onClick={() => { setSaveSuccess(false); }}>Save another</button>
+                  ✅ Quote saved! <button className="link-btn" onClick={() => setSaveSuccess(false)}>Save another</button>
                 </div>
               ) : (
-                <div className="save-quote-row">
-                  <input
-                    type="text"
-                    className="save-name-input"
-                    value={saveName}
-                    onChange={(e) => setSaveName(e.target.value)}
-                    placeholder="e.g. Multy, John Mullingar, Site 3..."
-                    onKeyDown={(e) => e.key === 'Enter' && handleSaveQuote()}
-                  />
-                  <button className="save-btn" onClick={handleSaveQuote}>Save</button>
-                </div>
+                <>
+                  <p className="save-label">Give this quote a name before saving</p>
+                  <div className="save-quote-row">
+                    <input
+                      type="text"
+                      className="save-name-input"
+                      value={saveName}
+                      onChange={(e) => setSaveName(e.target.value)}
+                      placeholder='e.g. "Multy", "John - Site 3"'
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSaveQuote(); } }}
+                      autoComplete="off"
+                      autoCorrect="off"
+                      spellCheck="false"
+                    />
+                    <button className="save-btn" onClick={handleSaveQuote}>Save</button>
+                  </div>
+                  {saveError && <p className="save-error">{saveError}</p>}
+                </>
               )}
-              {saveError && <p className="save-error">{saveError}</p>}
             </div>
           </div>
         )}
@@ -355,8 +393,27 @@ function App() {
               {savedQuotes.map(q => (
                 <div key={q.id} className="quote-card">
                   <div className="quote-card-header">
-                    <div>
-                      <span className="quote-name">{q.name}</span>
+                    <div className="quote-name-area">
+                      {editingNameId === q.id ? (
+                        <input
+                          ref={renameInputRef}
+                          type="text"
+                          className="rename-input"
+                          value={editingNameValue}
+                          onChange={(e) => setEditingNameValue(e.target.value)}
+                          onBlur={commitRename}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') commitRename();
+                            if (e.key === 'Escape') cancelRename();
+                          }}
+                          autoComplete="off"
+                        />
+                      ) : (
+                        <button className="quote-name-btn" onClick={() => startRename(q)} title="Click to rename">
+                          <span className="quote-name">{q.name}</span>
+                          <span className="rename-hint">✏️</span>
+                        </button>
+                      )}
                       <span className="quote-date">{q.savedAt}</span>
                     </div>
                     <button className="delete-btn" onClick={() => handleDeleteQuote(q.id)} title="Delete">✕</button>

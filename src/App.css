@@ -665,3 +665,10 @@ input.save-name-input:focus {
   width: auto !important;
   outline: none !important;
 }
+
+.quote-address-line2 {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  margin-top: 0.1rem;
+  padding-left: 1.1rem;
+}

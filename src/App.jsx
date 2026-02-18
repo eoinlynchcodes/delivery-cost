@@ -265,6 +265,17 @@ function App() {
           <div className="result-card">
             <h2>Delivery Quote</h2>
             
+            {result.resolvedAddress && (
+              <div className="result-address">
+                <span className="result-address-icon">📍</span>
+                <div>
+                  {result.resolvedAddress.line1 && <div className="result-address-line1">{result.resolvedAddress.line1}</div>}
+                  {result.resolvedAddress.line2 && <div className="result-address-line2-result">{result.resolvedAddress.line2}</div>}
+                  {!result.resolvedAddress.line1 && !result.resolvedAddress.line2 && <div>{result.destination}</div>}
+                </div>
+              </div>
+            )}
+
             <div className="result-summary">
               <div className="result-item highlight">
                 <span>Final Delivery Cost:</span>
@@ -425,11 +436,15 @@ function App() {
 
                   <div className="quote-card-body">
                     <div className="quote-destination">
-                      {q.resolvedAddress?.line1 && <div>📍 {q.resolvedAddress.line1}</div>}
-                      {q.resolvedAddress?.line2
-                        ? <div className="quote-address-line2">{q.resolvedAddress.line2}</div>
-                        : <div>📍 {q.destination}</div>
-                      }
+                      {q.resolvedAddress ? (
+                        <>
+                          {q.resolvedAddress.line1 && <div>📍 {q.resolvedAddress.line1}</div>}
+                          {q.resolvedAddress.line2 && <div className="quote-address-line2">{q.resolvedAddress.line2}</div>}
+                          {!q.resolvedAddress.line1 && !q.resolvedAddress.line2 && <div>📍 {q.destination}</div>}
+                        </>
+                      ) : (
+                        <div>📍 {q.destination}</div>
+                      )}
                     </div>
                     {q.orderValue > 0 && (
                       <div className="quote-row">

@@ -25,9 +25,23 @@ function App() {
   const [error, setError] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
 
+  // Saved quotes state
+  const [savedQuotes, setSavedQuotes] = useState(() => {
+    const saved = localStorage.getItem('savedDeliveryQuotes');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [saveName, setSaveName] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [showSaved, setShowSaved] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
   useEffect(() => {
     localStorage.setItem('deliveryPricingConfig', JSON.stringify(config));
   }, [config]);
+
+  useEffect(() => {
+    localStorage.setItem('savedDeliveryQuotes', JSON.stringify(savedQuotes));
+  }, [savedQuotes]);
 
   const updateConfig = (key, value) => {
     setConfig(prev => ({ ...prev, [key]: parseFloat(value) || value }));
@@ -40,7 +54,6 @@ function App() {
 
   const calculateDeliveryCost = (distanceKm, orderVal = 0) => {
     const totalCostPerKm = config.fuelCostPerKm + config.wearTearPerKm;
-
     const distanceCost = distanceKm * totalCostPerKm;
     const totalCost = distanceCost;
     const costWithMargin = totalCost * (1 + config.margin / 100);
@@ -102,13 +115,60 @@ function App() {
         duration: durationMin,
         distanceText: element.distance.text,
         durationText: element.duration.text,
+        destination: destinationAddress,
+        orderValue,
         ...pricing
       });
+
+      // Pre-fill save name from destination
+      const suggestedName = destinationAddress.split(',')[0].trim();
+      setSaveName(suggestedName);
+      setSaveError('');
+      setSaveSuccess(false);
 
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveQuote = () => {
+    if (!saveName.trim()) {
+      setSaveError('Please enter a name for this quote.');
+      return;
+    }
+    setSaveError('');
+
+    const quote = {
+      id: Date.now(),
+      name: saveName.trim(),
+      savedAt: new Date().toLocaleDateString('en-IE', { day: '2-digit', month: 'short', year: 'numeric' }),
+      destination: result.destination,
+      orderValue: result.orderValue,
+      distance: result.distance,
+      duration: result.duration,
+      finalFee: result.finalFee,
+      freeDelivery: result.freeDelivery,
+      minimumApplied: result.minimumApplied,
+      breakdown: result.breakdown,
+      kmCost: result.kmCost,
+      totalCost: result.totalCost,
+      deliveryFee: result.deliveryFee,
+    };
+
+    setSavedQuotes(prev => [quote, ...prev]);
+    setSaveSuccess(true);
+    setSaveName('');
+  };
+
+  const handleDeleteQuote = (id) => {
+    setSavedQuotes(prev => prev.filter(q => q.id !== id));
+  };
+
+  const handleClearAll = () => {
+    if (window.confirm('Delete all saved quotes?')) {
+      setSavedQuotes([]);
     }
   };
 
@@ -244,13 +304,101 @@ function App() {
                 {config.freeDeliveryThreshold > 0 && ` Orders over €${config.freeDeliveryThreshold} qualify for free delivery.`}
               </p>
             </div>
+
+            {/* ── Save Quote Panel ── */}
+            <div className="save-quote-panel">
+              <h3>💾 Save This Quote</h3>
+              {saveSuccess ? (
+                <div className="save-success">
+                  ✅ Quote saved! <button className="link-btn" onClick={() => { setSaveSuccess(false); }}>Save another</button>
+                </div>
+              ) : (
+                <div className="save-quote-row">
+                  <input
+                    type="text"
+                    className="save-name-input"
+                    value={saveName}
+                    onChange={(e) => setSaveName(e.target.value)}
+                    placeholder="e.g. Multy, John Mullingar, Site 3..."
+                    onKeyDown={(e) => e.key === 'Enter' && handleSaveQuote()}
+                  />
+                  <button className="save-btn" onClick={handleSaveQuote}>Save</button>
+                </div>
+              )}
+              {saveError && <p className="save-error">{saveError}</p>}
+            </div>
           </div>
         )}
       </div>
 
+      {/* ── Saved Quotes Section ── */}
+      <button 
+        className="settings-toggle"
+        onClick={() => setShowSaved(!showSaved)}
+      >
+        {showSaved ? '✕ Hide Saved Quotes' : `📋 Saved Quotes (${savedQuotes.length})`}
+      </button>
+
+      {showSaved && (
+        <div className="saved-quotes-panel">
+          <div className="saved-quotes-header">
+            <h2>Saved Quotes</h2>
+            {savedQuotes.length > 0 && (
+              <button className="clear-all-btn" onClick={handleClearAll}>Clear All</button>
+            )}
+          </div>
+
+          {savedQuotes.length === 0 ? (
+            <p className="no-quotes">No saved quotes yet. Calculate a delivery cost and save it above.</p>
+          ) : (
+            <div className="quotes-list">
+              {savedQuotes.map(q => (
+                <div key={q.id} className="quote-card">
+                  <div className="quote-card-header">
+                    <div>
+                      <span className="quote-name">{q.name}</span>
+                      <span className="quote-date">{q.savedAt}</span>
+                    </div>
+                    <button className="delete-btn" onClick={() => handleDeleteQuote(q.id)} title="Delete">✕</button>
+                  </div>
+
+                  <div className="quote-card-body">
+                    <div className="quote-destination">📍 {q.destination}</div>
+                    {q.orderValue > 0 && (
+                      <div className="quote-row">
+                        <span>Order Value:</span><span>€{q.orderValue.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="quote-row">
+                      <span>Distance:</span><span>{q.distance} km ({q.duration} min)</span>
+                    </div>
+                    <div className="quote-row">
+                      <span>Fuel:</span><span>€{q.breakdown.fuelCost}</span>
+                    </div>
+                    <div className="quote-row">
+                      <span>Wear & Tear:</span><span>€{q.breakdown.wearTear}</span>
+                    </div>
+                    {q.minimumApplied && (
+                      <div className="quote-row muted">
+                        <span>Minimum fee applied</span>
+                      </div>
+                    )}
+                    <div className="quote-row quote-total">
+                      <span>Delivery Fee:</span>
+                      <strong>{q.freeDelivery ? 'FREE' : `€${q.finalFee}`}</strong>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <button 
         className="settings-toggle"
         onClick={() => setShowSettings(!showSettings)}
+        style={{ marginTop: '0.5rem' }}
       >
         {showSettings ? '✕ Close Settings' : '⚙️ Edit Pricing Variables'}
       </button>

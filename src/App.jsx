@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 const DEFAULT_CONFIG = {
-  minimumFee: 15,
+  minimumFee: 20,
   costPerKm: 1.25,
   freeDeliveryThreshold: 400,
   originPostcode: 'N91PT7W',

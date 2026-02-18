@@ -672,3 +672,34 @@ input.save-name-input:focus {
   margin-top: 0.1rem;
   padding-left: 1.1rem;
 }
+
+/* ─────────────────────────────────────────
+   Resolved Address in Result Card
+───────────────────────────────────────── */
+.result-address {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.result-address-icon {
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.result-address-line1 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.result-address-line2-result {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin-top: 0.15rem;
+}

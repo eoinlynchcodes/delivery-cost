@@ -462,39 +462,39 @@ h1 {
    Saved Quotes Panel
 ───────────────────────────────────────── */
 .saved-quotes-panel {
-  background: var(--card-bg);
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1rem;
+  background: var(--card-bg) !important;
+  border-radius: 12px !important;
+  padding: 2rem !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  margin-bottom: 1rem !important;
 }
 
 .saved-quotes-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.25rem;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 1.25rem !important;
 }
 
 .saved-quotes-header h2 {
-  color: var(--primary);
-  font-size: 1.4rem;
-  margin: 0;
+  color: var(--primary) !important;
+  font-size: 1.4rem !important;
+  margin: 0 !important;
 }
 
 .clear-all-btn {
-  background: none;
-  border: 1px solid #fca5a5;
-  color: var(--error);
-  padding: 0.3rem 0.75rem;
-  border-radius: 5px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: background 0.15s;
+  background: none !important;
+  border: 1px solid #fca5a5 !important;
+  color: var(--error) !important;
+  padding: 0.3rem 0.75rem !important;
+  border-radius: 5px !important;
+  font-size: 0.8rem !important;
+  cursor: pointer !important;
+  transition: background 0.15s !important;
 }
 
 .clear-all-btn:hover {
-  background: #fef2f2;
+  background: #fef2f2 !important;
 }
 
 .no-quotes {
@@ -506,82 +506,100 @@ h1 {
 }
 
 .quotes-list {
-  display: grid;
-  gap: 0.75rem;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  gap: 1rem !important;
 }
 
 .quote-card {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  background: white !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07) !important;
+  transition: box-shadow 0.2s !important;
+}
+
+.quote-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
 }
 
 .quote-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.6rem 0.9rem;
-  background: #f8f9fa;
-  border-bottom: 1px solid var(--border);
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 0.75rem 1rem !important;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
 }
 
 .quote-name {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--text);
-  margin-right: 0.5rem;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  color: white !important;
+  margin-right: 0.5rem !important;
 }
 
 .quote-date {
-  font-size: 0.75rem;
-  color: var(--text-light);
+  font-size: 0.72rem !important;
+  color: rgba(255,255,255,0.7) !important;
 }
 
 .delete-btn {
-  background: none;
-  border: none;
-  color: #cbd5e1;
-  cursor: pointer;
-  font-size: 0.9rem;
-  padding: 0.1rem 0.3rem;
-  border-radius: 4px;
-  transition: color 0.15s, background 0.15s;
+  background: rgba(255,255,255,0.15) !important;
+  border: none !important;
+  color: rgba(255,255,255,0.8) !important;
+  cursor: pointer !important;
+  font-size: 0.8rem !important;
+  padding: 0.2rem 0.45rem !important;
+  border-radius: 4px !important;
+  transition: background 0.15s, color 0.15s !important;
+  line-height: 1 !important;
 }
 
 .delete-btn:hover {
-  color: var(--error);
-  background: #fef2f2;
+  background: rgba(220,38,38,0.8) !important;
+  color: white !important;
 }
 
 .quote-card-body {
-  padding: 0.75rem 0.9rem;
-  display: grid;
-  gap: 0.3rem;
+  padding: 0.9rem 1rem !important;
+  display: grid !important;
+  gap: 0.35rem !important;
 }
 
 .quote-destination {
-  font-size: 0.82rem;
-  color: var(--text-light);
-  margin-bottom: 0.25rem;
+  font-size: 0.8rem !important;
+  color: var(--text-light) !important;
+  margin-bottom: 0.4rem !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .quote-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85rem;
-  color: #475569;
+  display: flex !important;
+  justify-content: space-between !important;
+  font-size: 0.85rem !important;
+  color: var(--text) !important;
+  padding: 0.15rem 0 !important;
+}
+
+.quote-row span:first-child {
+  color: var(--text-light) !important;
 }
 
 .quote-row.muted {
-  color: var(--text-light);
-  font-style: italic;
+  color: var(--text-light) !important;
+  font-style: italic !important;
+  font-size: 0.78rem !important;
+  justify-content: flex-start !important;
 }
 
 .quote-row.quote-total {
-  border-top: 1px solid var(--border);
-  margin-top: 0.25rem;
-  padding-top: 0.35rem;
-  font-weight: 600;
-  color: var(--primary);
-  font-size: 0.9rem;
+  border-top: 2px solid var(--border) !important;
+  margin-top: 0.4rem !important;
+  padding-top: 0.5rem !important;
+  font-weight: 700 !important;
+  color: var(--primary) !important;
+  font-size: 0.95rem !important;
 }

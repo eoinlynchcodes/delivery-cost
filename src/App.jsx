@@ -123,18 +123,21 @@ function App() {
       const durationMin = Math.round(element.duration.value / 60);
       const pricing = calculateDeliveryCost(distanceKm, orderValue);
 
+      const resolved = data.resolvedAddress;
+
       setResult({
         distance: distanceKm.toFixed(1),
         duration: durationMin,
         distanceText: element.distance.text,
         durationText: element.duration.text,
         destination: destinationAddress,
+        resolvedAddress: resolved,
         orderValue,
         ...pricing
       });
 
-      // Suggest name from first part of destination
-      const suggestedName = destinationAddress.split(',')[0].trim();
+      // Suggest name: prefer town from geocoding, fall back to first part of input
+      const suggestedName = resolved?.town || destinationAddress.split(',')[0].trim();
       setSaveName(suggestedName);
       setSaveError('');
 
@@ -158,6 +161,7 @@ function App() {
       name: trimmed,
       savedAt: new Date().toLocaleDateString('en-IE', { day: '2-digit', month: 'short', year: 'numeric' }),
       destination: result.destination,
+      resolvedAddress: result.resolvedAddress,
       orderValue: result.orderValue,
       distance: result.distance,
       duration: result.duration,
@@ -420,7 +424,13 @@ function App() {
                   </div>
 
                   <div className="quote-card-body">
-                    <div className="quote-destination">📍 {q.destination}</div>
+                    <div className="quote-destination">
+                      {q.resolvedAddress?.line1 && <div>📍 {q.resolvedAddress.line1}</div>}
+                      {q.resolvedAddress?.line2
+                        ? <div className="quote-address-line2">{q.resolvedAddress.line2}</div>
+                        : <div>📍 {q.destination}</div>
+                      }
+                    </div>
                     {q.orderValue > 0 && (
                       <div className="quote-row">
                         <span>Order Value:</span><span>€{q.orderValue.toFixed(2)}</span>

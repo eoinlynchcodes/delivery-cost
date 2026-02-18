@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
@@ -14,78 +13,48 @@ export default async function handler(req, res) {
     const { origin, destination } = req.query;
 
     if (!origin || !destination) {
-      return res.status(400).json({ 
-        error: 'Missing origin or destination parameter' 
-      });
+      return res.status(400).json({ error: 'Missing origin or destination parameter' });
     }
 
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-    
     if (!apiKey) {
-      return res.status(500).json({ 
-        error: 'Google Maps API key not configured' 
-      });
+      return res.status(500).json({ error: 'Google Maps API key not configured' });
     }
 
-    // Run distance matrix + geocoding in parallel
-    const [distanceResponse, geocodeResponse] = await Promise.all([
-      fetch(`https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&units=metric&key=${apiKey}`),
-      fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(destination)}&key=${apiKey}`)
-    ]);
+    const response = await fetch(
+      `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&units=metric&key=${apiKey}`
+    );
+    const data = await response.json();
 
-    const [distanceData, geocodeData] = await Promise.all([
-      distanceResponse.json(),
-      geocodeResponse.json()
-    ]);
-
-    if (distanceData.status !== 'OK') {
+    if (data.status !== 'OK') {
       return res.status(400).json({ 
-        error: `Google Maps API error: ${distanceData.status}`,
-        message: distanceData.error_message || 'Unknown error'
+        error: `Google Maps API error: ${data.status}`,
+        message: data.error_message || 'Unknown error'
       });
     }
 
-    // Extract useful address parts from geocoding result
+    // Parse the resolved destination address Google already returns
+    // e.g. "14 Main Street, Mullingar, Co. Westmeath, Ireland"
     let resolvedAddress = null;
-    if (geocodeData.status === 'OK' && geocodeData.results.length > 0) {
-      const result = geocodeData.results[0];
-      const components = result.address_components;
+    const fullAddress = data.destination_addresses?.[0];
+    if (fullAddress) {
+      const parts = fullAddress.split(',').map(p => p.trim()).filter(Boolean);
+      // Drop the last part (country) — not useful
+      const withoutCountry = parts.slice(0, -1);
 
-      const get = (type) => components.find(c => c.types.includes(type))?.long_name || null;
+      // line1 = first part (street / area), line2 = remainder joined
+      const line1 = withoutCountry[0] || null;
+      const line2 = withoutCountry.slice(1).join(', ') || null;
+      // town is the first non-numeric/non-street part
+      const town = withoutCountry.find(p => !/^\d/.test(p) && p !== line1) || withoutCountry[1] || null;
 
-      const premise      = get('premise');
-      const streetNumber = get('street_number');
-      const route        = get('route');
-      const locality     = get('locality');
-      const sublocality  = get('sublocality') || get('sublocality_level_1');
-      const postalTown   = get('postal_town');
-      const adminArea2   = get('administrative_area_level_2'); // County
-      const adminArea1   = get('administrative_area_level_1');
-      const postalCode   = get('postal_code');
-
-      const streetParts = [premise, streetNumber, route].filter(Boolean);
-      const townParts   = [locality || sublocality || postalTown, adminArea2 || adminArea1].filter(Boolean);
-
-      resolvedAddress = {
-        line1: streetParts.length > 0 ? streetParts.join(' ') : null,
-        line2: townParts.length > 0 ? townParts.join(', ') : null,
-        town: locality || sublocality || postalTown || null,
-        county: adminArea2 || adminArea1 || null,
-        postalCode: postalCode || null,
-        formattedFull: result.formatted_address,
-      };
+      resolvedAddress = { line1, line2, town, formattedFull: fullAddress };
     }
 
-    res.status(200).json({
-      ...distanceData,
-      resolvedAddress,
-    });
+    res.status(200).json({ ...data, resolvedAddress });
 
   } catch (error) {
     console.error('Distance API error:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message 
-    });
+    res.status(500).json({ error: 'Internal server error', message: error.message });
   }
 }

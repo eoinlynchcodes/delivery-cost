@@ -380,3 +380,208 @@ h1 {
     font-size: 1.5rem;
   }
 }
+
+/* ─────────────────────────────────────────
+   Save Quote Panel
+───────────────────────────────────────── */
+.save-quote-panel {
+  margin-top: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+}
+
+.save-quote-panel h3 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  color: #15803d;
+}
+
+.save-quote-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.save-name-input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #86efac;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: white;
+}
+
+.save-name-input:focus {
+  outline: none;
+  border-color: #16a34a;
+  box-shadow: 0 0 0 2px #dcfce7;
+}
+
+.save-btn {
+  padding: 0.5rem 1.25rem;
+  background: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.save-btn:hover {
+  background: #15803d;
+}
+
+.save-success {
+  color: #15803d;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.save-error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin: 0.4rem 0 0 0;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #16a34a;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: inherit;
+  padding: 0;
+  margin-left: 0.5rem;
+}
+
+/* ─────────────────────────────────────────
+   Saved Quotes Panel
+───────────────────────────────────────── */
+.saved-quotes-panel {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+}
+
+.saved-quotes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.saved-quotes-header h2 {
+  color: var(--primary);
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.clear-all-btn {
+  background: none;
+  border: 1px solid #fca5a5;
+  color: var(--error);
+  padding: 0.3rem 0.75rem;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.clear-all-btn:hover {
+  background: #fef2f2;
+}
+
+.no-quotes {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1.5rem 0;
+  margin: 0;
+}
+
+.quotes-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.quote-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.quote-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.9rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid var(--border);
+}
+
+.quote-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+  margin-right: 0.5rem;
+}
+
+.quote-date {
+  font-size: 0.75rem;
+  color: var(--text-light);
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: #cbd5e1;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.delete-btn:hover {
+  color: var(--error);
+  background: #fef2f2;
+}
+
+.quote-card-body {
+  padding: 0.75rem 0.9rem;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.quote-destination {
+  font-size: 0.82rem;
+  color: var(--text-light);
+  margin-bottom: 0.25rem;
+}
+
+.quote-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.quote-row.muted {
+  color: var(--text-light);
+  font-style: italic;
+}
+
+.quote-row.quote-total {
+  border-top: 1px solid var(--border);
+  margin-top: 0.25rem;
+  padding-top: 0.35rem;
+  font-weight: 600;
+  color: var(--primary);
+  font-size: 0.9rem;
+}

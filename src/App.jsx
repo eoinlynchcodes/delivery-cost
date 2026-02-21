@@ -5,16 +5,21 @@ const DEFAULT_CONFIG = {
   minimumFee: 20,
   costPerKm: 1.25,
   freeDeliveryThreshold: 400,
-  originPostcode: 'N91PT7W',
-  fuelCostPerKm: 0.40,
-  wearTearPerKm: 0.10,
-  margin: 0
+  originPostcode: 'N91PT7W'
 };
 
 function App() {
+  
   const [config, setConfig] = useState(() => {
     const saved = localStorage.getItem('deliveryPricingConfig');
-    return saved ? JSON.parse(saved) : DEFAULT_CONFIG;
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.fuelCostPerKm !== undefined || parsed.wearTearPerKm !== undefined) {
+        return DEFAULT_CONFIG;
+      }
+      return parsed;
+    }
+    return DEFAULT_CONFIG;
   });
 
   const [originAddress, setOriginAddress] = useState(config.originPostcode);
@@ -65,23 +70,19 @@ function App() {
   };
 
   const calculateDeliveryCost = (distanceKm, orderVal = 0) => {
-    const costPerKm = config.fuelCostPerKm + config.wearTearPerKm;
-    const distanceCost = distanceKm * costPerKm;
+    const distanceCost = distanceKm * config.costPerKm;
     const deliveryFee = config.minimumFee + distanceCost;
     const finalFee = orderVal >= config.freeDeliveryThreshold ? 0 : deliveryFee;
 
     return {
-      costPerKm: costPerKm.toFixed(2),
       distanceCost: distanceCost.toFixed(2),
       deliveryFee: deliveryFee.toFixed(2),
       freeDelivery: finalFee === 0,
       finalFee: finalFee.toFixed(2),
       breakdown: {
         baseFee: config.minimumFee.toFixed(2),
-        fuelCost: (distanceKm * config.fuelCostPerKm).toFixed(2),
-        wearTear: (distanceKm * config.wearTearPerKm).toFixed(2),
         distanceCost: distanceCost.toFixed(2),
-      }
+      },
     };
   };
 
@@ -303,16 +304,8 @@ function App() {
                   <span>Base Fee:</span>
                   <span>€{result.breakdown.baseFee}</span>
                 </div>
-                <div className="breakdown-item">
-                  <span>Fuel (€{config.fuelCostPerKm}/km × {result.distance} km):</span>
-                  <span>€{result.breakdown.fuelCost}</span>
-                </div>
-                <div className="breakdown-item">
-                  <span>Wear & Tear (€{config.wearTearPerKm}/km × {result.distance} km):</span>
-                  <span>€{result.breakdown.wearTear}</span>
-                </div>
                 <div className="breakdown-item subtotal">
-                  <span>Distance Cost ({result.costPerKm}/km × {result.distance} km):</span>
+                  <span>Distance Cost (€{config.costPerKm}/km × {result.distance} km):</span>
                   <span>€{result.distanceCost}</span>
                 </div>
                 <div className="breakdown-item final-total">
@@ -358,13 +351,11 @@ function App() {
       <div className="formula-explanation">
         <h3>Pricing Formula</h3>
         <div className="formula-box">
-          <code>
-            Delivery Fee = €{config.minimumFee} + (Distance × (Fuel + Wear & Tear per km))
-          </code>
+          <code>Delivery Fee = €{config.minimumFee} + (Distance × €{config.costPerKm}/km)</code>
         </div>
         <p className="formula-notes">
-          <strong>How it works:</strong> We calculate the true cost of delivery based on distance (fuel and vehicle wear).
-          A flat base fee of €{config.minimumFee} covers loading/unloading time, plus a per-km rate combining fuel and vehicle wear & tear.
+          <strong>How it works:</strong> A flat base fee of €{config.minimumFee} covers loading/unloading,
+          plus €{config.costPerKm} per km of distance.
           {config.freeDeliveryThreshold > 0 && ` Orders over €${config.freeDeliveryThreshold} qualify for free delivery.`}
         </p>
       </div>
@@ -493,23 +484,14 @@ function App() {
             </div>
 
             <div className="setting-group">
-              <h3>Per-Kilometer Costs</h3>
+              <h3>Per-Kilometre Rate</h3>
               <div className="input-group">
-                <label>Fuel Cost (€/km)</label>
+                <label>Cost per km (€)</label>
                 <input
                   type="number"
                   step="0.01"
-                  value={config.fuelCostPerKm}
-                  onChange={(e) => updateConfig('fuelCostPerKm', e.target.value)}
-                />
-              </div>
-              <div className="input-group">
-                <label>Wear & Tear (€/km)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={config.wearTearPerKm}
-                  onChange={(e) => updateConfig('wearTearPerKm', e.target.value)}
+                  value={config.costPerKm}
+                  onChange={(e) => updateConfig('costPerKm', e.target.value)}
                 />
               </div>
             </div>

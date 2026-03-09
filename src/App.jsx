@@ -197,33 +197,33 @@ function App() {
   return (
           <div className="container">
                 <header>
-                        <h1>Delivery Cost Calculator</h1>h1>
-                        <p className="subtitle">Timber and Bark Mulch - Distance-Based Pricing</p>p>
-                </header>header>
+                        <h1>Delivery Cost Calculator</h1>
+                        <p className="subtitle">Timber and Bark Mulch - Distance-Based Pricing</p>
+                </header>
           
                 <div className="calculator-card">
                         <div className="input-group">
-                                  <label>Origin Address (Yard)</label>label>
+                                  <label>Origin Address (Yard)</label>
                                   <input
                                                   type="text"
                                                   value={originAddress}
                                                   onChange={(e) => setOriginAddress(e.target.value)}
                                                   placeholder="N91PT7W"
                                                 />
-                        </div>div>
+                        </div>
                 
                         <div className="input-group">
-                                  <label>Destination Address (Customer)</label>label>
+                                  <label>Destination Address (Customer)</label>
                                   <input
                                                   type="text"
                                                   value={destinationAddress}
                                                   onChange={(e) => setDestinationAddress(e.target.value)}
                                                   placeholder="Enter Eircode or full address"
                                                 />
-                        </div>div>
+                        </div>
                 
                         <div className="input-group">
-                                  <label>Order Value (€) - Optional</label>label>
+                                  <label>Order Value (€) - Optional</label>
                                   <input
                                                   type="number"
                                                   value={orderValue}
@@ -231,7 +231,7 @@ function App() {
                                                   placeholder="0"
                                                   min="0"
                                                 />
-                        </div>div>
+                        </div>
                 
                         <button
                                       className="calculate-btn"
@@ -239,79 +239,79 @@ function App() {
                                       disabled={loading}
                                     >
                             {loading ? 'Calculating...' : 'Calculate Delivery Cost'}
-                        </button>button>
+                        </button>
                 
                     {error && (
                         <div className="error-message">
-                                    <strong>Error:</strong>strong> {error}
-                        </div>div>
+                                    <strong>Error:</strong> {error}
+                        </div>
                         )}
                 
                     {result && (
                         <div className="result-card">
-                                    <h2>Delivery Quote</h2>h2>
+                                    <h2>Delivery Quote</h2>
                             {result.resolvedAddress && (
                                           <div className="result-address">
-                                                          <span className="result-address-icon">📍</span>span>
+                                                          <span className="result-address-icon">📍</span>
                                                           <div>
-                                                              {result.resolvedAddress.line1 && <div className="result-address-line1">{result.resolvedAddress.line1}</div>div>}
-                                                              {result.resolvedAddress.line2 && <div className="result-address-line2-result">{result.resolvedAddress.line2}</div>div>}
-                                                              {!result.resolvedAddress.line1 && !result.resolvedAddress.line2 && <div>{result.destination}</div>div>}
+                                                              {result.resolvedAddress.line1 && <div className="result-address-line1">{result.resolvedAddress.line1}</div>}
+                                                              {result.resolvedAddress.line2 && <div className="result-address-line2-result">{result.resolvedAddress.line2}</div>}
+                                                              {!result.resolvedAddress.line1 && !result.resolvedAddress.line2 && <div>{result.destination}</div>}
                                                           </div>
-                                          </div>div>
+                                          </div>
                                     )}
                         
                                     <div className="result-summary">
                                                   <div className="result-item highlight">
-                                                                  <span>Final Delivery Cost:</span>span>
-                                                                  <strong>€{result.finalFee}</strong>strong>
-                                                  </div>div>
+                                                                  <span>Final Delivery Cost:</span>
+                                                                  <strong>€{result.finalFee}</strong>
+                                                  </div>
                                         {result.freeDelivery && (
                                             <div className="free-delivery-badge">
                                                               🎉 FREE DELIVERY (Order over €{config.freeDeliveryThreshold})
-    </div>div>
+    </div>
                                                   )}
-                                    </div>div>
+                                    </div>
                         
                                     <div className="result-details">
                                                   <div className="result-item">
-                                                                  <span>Distance:</span>span>
-                                                                  <span>{result.distance} km</span>span>
-                                                  </div>div>
+                                                                  <span>Distance:</span>
+                                                                  <span>{result.distance} km</span>
+                                                  </div>
                                                   <div className="result-item">
-                                                                  <span>Estimated Time:</span>span>
-                                                                      <span>{result.duration} minutes</span>span>
-                                                  </div>div>
-                                    </div>div>
+                                                                  <span>Estimated Time:</span>
+                                                                      <span>{result.duration} minutes</span>
+                                                  </div>
+                                    </div>
                         
                                     <div className="calculation-breakdown">
-                                                  <h3>Cost Breakdown</h3>h3>
+                                                  <h3>Cost Breakdown</h3>
                                                   <div className="breakdown-section">
                                                                   <div className="breakdown-item">
-                                                                                    <span>Base Fee:</span>span>
-                                                                                    <span>€{result.breakdown.baseFee}</span>span>
-                                                                  </div>div>
+                                                                                    <span>Base Fee:</span>
+                                                                                    <span>€{result.breakdown.baseFee}</span>
+                                                                  </div>
                                                                   <div className="breakdown-item subtotal">
-                                                                                    <span>Distance Cost (€{RATE_PER_KM}/km × {result.distance} km):</span>span>
-                                                                                    <span>€{result.distanceCost}</span>span>
-                                                                  </div>div>
+                                                                                    <span>Distance Cost (€{RATE_PER_KM}/km × {result.distance} km):</span>
+                                                                                    <span>€{result.distanceCost}</span>
+                                                                  </div>
                                                                   <div className="breakdown-item final-total">
-                                                                                    <span>Customer Pays:</span>span>
-                                                                                    <span>€{result.deliveryFee}</span>span>
-                                                                  </div>div>
-                                                  </div>div>
-                                    </div>div>
+                                                                                    <span>Customer Pays:</span>
+                                                                                    <span>€{result.deliveryFee}</span>
+                                                                  </div>
+                                                  </div>
+                                    </div>
                         
                             {/* ── Save Quote Panel ── */}
                                     <div className="save-quote-panel">
-                                                  <h3>💾 Save This Quote</h3>h3>
+                                                  <h3>💾 Save This Quote</h3>
                                         {saveSuccess ? (
                                             <div className="save-success">
-                                                              ✅ Quote saved! <button className="link-btn" onClick={() => setSaveSuccess(false)}>Save another</button>button>
-                                            </div>div>
+                                                              ✅ Quote saved! <button className="link-btn" onClick={() => setSaveSuccess(false)}>Save another</button>
+                                            </div>
                                           ) : (
                                             <>
-                                                              <p className="save-label">Give this quote a name before saving</p>p>
+                                                              <p className="save-label">Give this quote a name before saving</p>
                                                               <div className="save-quote-row">
                                                                                   <input
                                                                                                             type="text"
@@ -326,43 +326,43 @@ function App() {
                                                                                                             autoCorrect="off"
                                                                                                             spellCheck="false"
                                                                                                           />
-                                                                                  <button className="save-btn" onClick={handleSaveQuote}>Save</button>button>
-                                                              </div>div>
-                                                {saveError && <p className="save-error">{saveError}</p>p>}
+                                                                                  <button className="save-btn" onClick={handleSaveQuote}>Save</button>
+                                                              </div>
+                                                {saveError && <p className="save-error">{saveError}</p>}
                                             </>>
                                           )}
-                                    </div>div>
-                        </div>div>
+                                    </div>
+                        </div>
                         )}
-                </div>div>
+                </div>
           
               {/* ── Pricing Formula (always visible) ── */}
                 <div className="formula-explanation">
-                        <h3>Pricing Formula</h3>h3>
+                        <h3>Pricing Formula</h3>
                         <div className="formula-box">
-                                  <code>Delivery Fee = €{BASE_FEE} + (Distance × €{RATE_PER_KM}/km)</code>code>
-                        </div>div>
+                                  <code>Delivery Fee = €{BASE_FEE} + (Distance × €{RATE_PER_KM}/km)</code>
+                        </div>
                         <p className="formula-notes">
-                                  <strong>How it works:</strong>strong> A flat base fee of €{BASE_FEE} covers loading/unloading, plus €{RATE_PER_KM} per km of distance (rounded down to the nearest km).
+                                  <strong>How it works:</strong> A flat base fee of €{BASE_FEE} covers loading/unloading, plus €{RATE_PER_KM} per km of distance (rounded down to the nearest km).
                             {config.freeDeliveryThreshold > 0 && ` Orders over €${config.freeDeliveryThreshold} qualify for free delivery.`}
-                        </p>p>
-                </div>div>
+                        </p>
+                </div>
           
               {/* ── Saved Quotes Section ── */}
                 <button className="settings-toggle" onClick={() => setShowSaved(!showSaved)}>
                     {showSaved ? '✕ Hide Saved Quotes' : `📋 Saved Quotes (${savedQuotes.length})`}
-                </button>button>
+                </button>
           
               {showSaved && (
                       <div className="saved-quotes-panel">
                                 <div className="saved-quotes-header">
-                                            <h2>Saved Quotes</h2>h2>
+                                            <h2>Saved Quotes</h2>
                                     {savedQuotes.length > 0 && (
-                                        <button className="clear-all-btn" onClick={handleClearAll}>Clear All</button>button>
+                                        <button className="clear-all-btn" onClick={handleClearAll}>Clear All</button>
                                             )}
-                                </div>div>
+                                </div>
                           {savedQuotes.length === 0 ? (
-                                      <p className="no-quotes">No saved quotes yet. Calculate a delivery cost and save it above.</p>p>
+                                      <p className="no-quotes">No saved quotes yet. Calculate a delivery cost and save it above.</p>
                                     ) : (
                                       <div className="quotes-list">
                                           {savedQuotes.map(q => (
@@ -385,50 +385,50 @@ function App() {
                                                                                                                   />
                                                                                     ) : (
                                                                                       <button className="quote-name-btn" onClick={() => startRename(q)} title="Click to rename">
-                                                                                                                <span className="quote-name">{q.name}</span>span>
-                                                                                                                <span className="rename-hint">✏️</span>span>
-                                                                                          </button>button>
+                                                                                                                <span className="quote-name">{q.name}</span>
+                                                                                                                <span className="rename-hint">✏️</span>
+                                                                                          </button>
                                                                                                                       )}
-                                                                                                                      <span className="quote-date">{q.savedAt}</span>span>
-                                                                                                    </div>div>
-                                                                                                <button className="delete-btn" onClick={() => handleDeleteQuote(q.id)} title="Delete">✕</button>button>
-                                                                            </div>div>
+                                                                                                                      <span className="quote-date">{q.savedAt}</span>
+                                                                                                    </div>
+                                                                                                <button className="delete-btn" onClick={() => handleDeleteQuote(q.id)} title="Delete">✕</button>
+                                                                            </div>
                                                                             <div className="quote-card-body">
                                                                                                 <div className="quote-destination">
                                                                                                     {q.resolvedAddress ? (
                                                                                       <>
-                                                                                          {q.resolvedAddress.line1 && <div>📍 {q.resolvedAddress.line1}</div>div>}
-                                                                                          {q.resolvedAddress.line2 && <div className="quote-address-line2">{q.resolvedAddress.line2}</div>div>}
-                                                                                          {!q.resolvedAddress.line1 && !q.resolvedAddress.line2 && <div>📍 {q.destination}</div>div>}
+                                                                                          {q.resolvedAddress.line1 && <div>📍 {q.resolvedAddress.line1}</div>}
+                                                                                          {q.resolvedAddress.line2 && <div className="quote-address-line2">{q.resolvedAddress.line2}</div>}
+                                                                                          {!q.resolvedAddress.line1 && !q.resolvedAddress.line2 && <div>📍 {q.destination}</div>}
                                                                                           </>>
                                                                                     ) : (
-                                                                                      <div>📍 {q.destination}</div>div>
+                                                                                      <div>📍 {q.destination}</div>
                                                                                                                       )}
-                                                                                                    </div>div>
+                                                                                                    </div>
                                                                                 {q.orderValue > 0 && (
                                                                                     <div className="quote-row">
-                                                                                                            <span>Order Value:</span>span><span>€{q.orderValue.toFixed(2)}</span>span>
-                                                                                        </div>div>
+                                                                                                            <span>Order Value:</span><span>€{q.orderValue.toFixed(2)}</span>
+                                                                                        </div>
                                                                                                 )}
                                                                                                 <div className="quote-row">
-                                                                                                                      <span>Distance:</span>span><span>{q.distance} km ({q.duration} min)</span>span>
-                                                                                                    </div>div>
+                                                                                                                      <span>Distance:</span><span>{q.distance} km ({q.duration} min)</span>
+                                                                                                    </div>
                                                                                                 <div className="quote-row">
-                                                                                                                      <span>Base Fee:</span>span><span>€{q.breakdown.baseFee}</span>span>
-                                                                                                    </div>div>
+                                                                                                                      <span>Base Fee:</span><span>€{q.breakdown.baseFee}</span>
+                                                                                                    </div>
                                                                                                 <div className="quote-row">
-                                                                                                                      <span>Distance Cost:</span>span><span>€{q.breakdown.distanceCost}</span>span>
-                                                                                                    </div>div>
+                                                                                                                      <span>Distance Cost:</span><span>€{q.breakdown.distanceCost}</span>
+                                                                                                    </div>
                                                                                                 <div className="quote-row quote-total">
-                                                                                                                      <span>Delivery Fee:</span>span>
-                                                                                                                      <strong>{q.freeDelivery ? 'FREE' : `€${q.finalFee}`}</strong>strong>
-                                                                                                    </div>div>
-                                                                            </div>div>
-                                                          </div>div>
+                                                                                                                      <span>Delivery Fee:</span>
+                                                                                                                      <strong>{q.freeDelivery ? 'FREE' : `€${q.finalFee}`}</strong>
+                                                                                                    </div>
+                                                                            </div>
+                                                          </div>
                                                         ))}
-                                      </div>div>
+                                      </div>
                                 )}
-                      </div>div>
+                      </div>
                 )}
           
                 <button
@@ -437,38 +437,38 @@ function App() {
                             style={{ marginTop: '0.5rem' }}
                           >
                     {showSettings ? '✕ Close Settings' : '⚙️ Edit Pricing Variables'}
-                </button>button>
+                </button>
           
               {showSettings && (
                       <div className="settings-panel">
-                                <h2>Pricing Configuration</h2>h2>
+                                <h2>Pricing Configuration</h2>
                                 <div className="settings-grid">
                                             <div className="setting-group">
-                                                          <h3>Delivery Fees</h3>h3>
+                                                          <h3>Delivery Fees</h3>
                                                           <div className="input-group">
-                                                                          <label>Free Delivery Threshold (€)</label>label>
+                                                                          <label>Free Delivery Threshold (€)</label>
                                                                           <input
                                                                                                 type="number"
                                                                                                 step="1"
                                                                                                 value={config.freeDeliveryThreshold}
                                                                                                 onChange={(e) => updateConfig('freeDeliveryThreshold', e.target.value)}
                                                                                               />
-                                                          </div>div>
-                                            </div>div>
-                                </div>div>
+                                                          </div>
+                                            </div>
+                                </div>
                                 <div className="settings-actions">
                                             <button className="reset-btn" onClick={resetToDefaults}>
                                                           Reset to Defaults
-                                            </button>button>
-                                </div>div>
+                                            </button>
+                                </div>
                                 <div className="settings-info">
-                                            <p><strong>Note:</strong>strong> Settings are saved in your browser and will persist between sessions.</p>p>
-                                            <p><strong>Pricing:</strong>strong> Base fee (€{BASE_FEE}) and per-km rate (€{RATE_PER_KM}) are fixed server-side.</p>p>
-                                </div>div>
-                      </div>div>
+                                            <p><strong>Note:</strong> Settings are saved in your browser and will persist between sessions.</p>
+                                            <p><strong>Pricing:</strong> Base fee (€{BASE_FEE}) and per-km rate (€{RATE_PER_KM}) are fixed server-side.</p>
+                                </div>
+                      </div>
                 )}
-          </div>div>
+          </div>
         );
 }
 
-export default App;</></></div>
+export default App;

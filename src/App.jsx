@@ -329,7 +329,7 @@ function App() {
                                                                                   <button className="save-btn" onClick={handleSaveQuote}>Save</button>
                                                               </div>
                                                 {saveError && <p className="save-error">{saveError}</p>}
-                                            </>>
+                                            </>
                                           )}
                                     </div>
                         </div>
@@ -400,7 +400,7 @@ function App() {
                                                                                           {q.resolvedAddress.line1 && <div>📍 {q.resolvedAddress.line1}</div>}
                                                                                           {q.resolvedAddress.line2 && <div className="quote-address-line2">{q.resolvedAddress.line2}</div>}
                                                                                           {!q.resolvedAddress.line1 && !q.resolvedAddress.line2 && <div>📍 {q.destination}</div>}
-                                                                                          </>>
+                                                                                          </>
                                                                                     ) : (
                                                                                       <div>📍 {q.destination}</div>
                                                                                                                       )}

@@ -19,6 +19,17 @@ function selectBand(bands, orderValue) {
   return sorted.find(b => total >= b.minOrderTotal) ?? sorted[sorted.length - 1];
 }
 
+function bandLabel(band, allBands, freeThreshold) {
+  const sorted = [...allBands].sort((a, b) => a.minOrderTotal - b.minOrderTotal);
+  const idx = sorted.findIndex(b => b.minOrderTotal === band.minOrderTotal);
+  const next = sorted[idx + 1];
+  const upper = next ? next.minOrderTotal - 0.01 : freeThreshold > 0 ? freeThreshold - 0.01 : null;
+  if (upper !== null) {
+    return `Orders €${band.minOrderTotal} – €${upper.toFixed(0)}`;
+  }
+  return `Orders €${band.minOrderTotal}+`;
+}
+
 function App() {
   const [config, setConfig] = useState(() => {
     const saved = localStorage.getItem('deliveryPricingConfig');
@@ -35,6 +46,7 @@ function App() {
 
   const [priceBands, setPriceBands] = useState(DEFAULT_BANDS);
   const [bandsLoading, setBandsLoading] = useState(true);
+  const [bandsDirty, setBandsDirty] = useState(false);
   const [bandsSaving, setBandsSaving] = useState(false);
   const [bandsSaveSuccess, setBandsSaveSuccess] = useState(false);
   const [bandsSaveError, setBandsSaveError] = useState('');
@@ -47,7 +59,6 @@ function App() {
   const [error, setError] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
 
-  // Saved quotes state
   const [savedQuotes, setSavedQuotes] = useState(() => {
     const saved = localStorage.getItem('savedDeliveryQuotes');
     return saved ? JSON.parse(saved) : [];
@@ -57,12 +68,10 @@ function App() {
   const [showSaved, setShowSaved] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Inline rename state
   const [editingNameId, setEditingNameId] = useState(null);
   const [editingNameValue, setEditingNameValue] = useState('');
   const renameInputRef = useRef(null);
 
-  // Fetch price bands from API on mount
   useEffect(() => {
     fetch(DELIVERY_CONFIG_API)
       .then(r => r.json())
@@ -93,30 +102,30 @@ function App() {
     }
   }, [editingNameId]);
 
-  const updateConfig = (key, value) => {
-    setConfig(prev => ({ ...prev, [key]: parseFloat(value) || value }));
-  };
-
-  const resetToDefaults = () => {
-    setConfig(DEFAULT_CONFIG);
-    setPriceBands(DEFAULT_BANDS);
-    localStorage.removeItem('deliveryPricingConfig');
-  };
-
-  // Band editor helpers
   const updateBand = (index, field, value) => {
     setPriceBands(prev => prev.map((b, i) =>
       i === index ? { ...b, [field]: parseFloat(value) || 0 } : b
     ));
+    setBandsDirty(true);
+    setBandsSaveSuccess(false);
   };
 
   const addBand = () => {
-    setPriceBands(prev => [...prev, { minOrderTotal: 0, baseFee: 15, perKm: 1.25 }]);
+    const sorted = [...priceBands].sort((a, b) => b.minOrderTotal - a.minOrderTotal);
+    const highest = sorted[0]?.minOrderTotal ?? 0;
+    setPriceBands(prev => [...prev, { minOrderTotal: highest + 100, baseFee: 10, perKm: 0.50 }]);
+    setBandsDirty(true);
   };
 
   const removeBand = (index) => {
     if (priceBands.length <= 1) return;
     setPriceBands(prev => prev.filter((_, i) => i !== index));
+    setBandsDirty(true);
+  };
+
+  const updateFreeThreshold = (value) => {
+    setConfig(prev => ({ ...prev, freeDeliveryThreshold: parseFloat(value) || 0 }));
+    setBandsDirty(true);
   };
 
   const saveBandsToAPI = async () => {
@@ -134,12 +143,19 @@ function App() {
       });
       if (!res.ok) throw new Error('Save failed');
       setBandsSaveSuccess(true);
-      setTimeout(() => setBandsSaveSuccess(false), 3000);
+      setBandsDirty(false);
     } catch {
       setBandsSaveError('Could not save. Please try again.');
     } finally {
       setBandsSaving(false);
     }
+  };
+
+  const resetToDefaults = () => {
+    setPriceBands(DEFAULT_BANDS);
+    setConfig(DEFAULT_CONFIG);
+    setBandsDirty(true);
+    localStorage.removeItem('deliveryPricingConfig');
   };
 
   const fetchDistance = async () => {
@@ -172,8 +188,7 @@ function App() {
 
       const distanceKm = Math.floor(element.distance.value / 1000);
       const durationMin = Math.round(element.duration.value / 60);
-
-      const freeDelivery = orderValue >= config.freeDeliveryThreshold;
+      const freeDelivery = orderValue >= config.freeDeliveryThreshold && config.freeDeliveryThreshold > 0;
 
       let deliveryFee = 0;
       let band = null;
@@ -212,10 +227,7 @@ function App() {
 
   const handleSaveQuote = () => {
     const trimmed = saveName.trim();
-    if (!trimmed) {
-      setSaveError('Please enter a name for this quote.');
-      return;
-    }
+    if (!trimmed) { setSaveError('Please enter a name for this quote.'); return; }
     setSaveError('');
     const quote = {
       id: Date.now(),
@@ -236,36 +248,22 @@ function App() {
     setSaveName('');
   };
 
-  const handleDeleteQuote = (id) => {
-    setSavedQuotes(prev => prev.filter(q => q.id !== id));
-  };
+  const handleDeleteQuote = (id) => setSavedQuotes(prev => prev.filter(q => q.id !== id));
 
   const handleClearAll = () => {
-    if (window.confirm('Delete all saved quotes?')) {
-      setSavedQuotes([]);
-    }
+    if (window.confirm('Delete all saved quotes?')) setSavedQuotes([]);
   };
 
-  const startRename = (quote) => {
-    setEditingNameId(quote.id);
-    setEditingNameValue(quote.name);
-  };
-
+  const startRename = (quote) => { setEditingNameId(quote.id); setEditingNameValue(quote.name); };
   const commitRename = () => {
     const trimmed = editingNameValue.trim();
-    if (trimmed) {
-      setSavedQuotes(prev => prev.map(q => q.id === editingNameId ? { ...q, name: trimmed } : q));
-    }
+    if (trimmed) setSavedQuotes(prev => prev.map(q => q.id === editingNameId ? { ...q, name: trimmed } : q));
     setEditingNameId(null);
     setEditingNameValue('');
   };
+  const cancelRename = () => { setEditingNameId(null); setEditingNameValue(''); };
 
-  const cancelRename = () => {
-    setEditingNameId(null);
-    setEditingNameValue('');
-  };
-
-  const activeBand = result?.band ?? (bandsLoading ? null : selectBand(priceBands, orderValue));
+  const sortedBands = [...priceBands].sort((a, b) => a.minOrderTotal - b.minOrderTotal);
 
   return (
     <div className="container">
@@ -274,6 +272,7 @@ function App() {
         <p className="subtitle">Timber and Bark Mulch - Distance-Based Pricing</p>
       </header>
 
+      {/* ── Calculator Card ── */}
       <div className="calculator-card">
         <div className="input-group">
           <label>Origin Address (Yard)</label>
@@ -284,7 +283,6 @@ function App() {
             placeholder="N91PT7W"
           />
         </div>
-
         <div className="input-group">
           <label>Destination Address (Customer)</label>
           <input
@@ -294,9 +292,8 @@ function App() {
             placeholder="Enter Eircode or full address"
           />
         </div>
-
         <div className="input-group">
-          <label>Order Value (€) - Optional</label>
+          <label>Order Value (€) — used to pick the right price band</label>
           <input
             type="number"
             value={orderValue}
@@ -305,20 +302,11 @@ function App() {
             min="0"
           />
         </div>
-
-        <button
-          className="calculate-btn"
-          onClick={fetchDistance}
-          disabled={loading}
-        >
+        <button className="calculate-btn" onClick={fetchDistance} disabled={loading}>
           {loading ? 'Calculating...' : 'Calculate Delivery Cost'}
         </button>
 
-        {error && (
-          <div className="error-message">
-            <strong>Error:</strong> {error}
-          </div>
-        )}
+        {error && <div className="error-message"><strong>Error:</strong> {error}</div>}
 
         {result && (
           <div className="result-card">
@@ -333,7 +321,6 @@ function App() {
                 </div>
               </div>
             )}
-
             <div className="result-summary">
               <div className="result-item highlight">
                 <span>Final Delivery Cost:</span>
@@ -345,45 +332,28 @@ function App() {
                 </div>
               )}
             </div>
-
             <div className="result-details">
-              <div className="result-item">
-                <span>Distance:</span>
-                <span>{result.distance} km</span>
-              </div>
-              <div className="result-item">
-                <span>Estimated Time:</span>
-                <span>{result.duration} minutes</span>
-              </div>
+              <div className="result-item"><span>Distance:</span><span>{result.distance} km</span></div>
+              <div className="result-item"><span>Estimated Time:</span><span>{result.duration} minutes</span></div>
+              {result.band && <div className="result-item"><span>Price Band:</span><span>€{result.band.baseFee} base + €{result.band.perKm}/km</span></div>}
             </div>
-
             {result.breakdown && (
               <div className="calculation-breakdown">
                 <h3>Cost Breakdown</h3>
                 <div className="breakdown-section">
-                  <div className="breakdown-item">
-                    <span>Base Fee:</span>
-                    <span>€{result.breakdown.baseFee}</span>
-                  </div>
+                  <div className="breakdown-item"><span>Base Fee:</span><span>€{result.breakdown.baseFee}</span></div>
                   <div className="breakdown-item subtotal">
                     <span>Distance Cost (€{result.band.perKm}/km × {result.distance} km):</span>
                     <span>€{result.breakdown.distanceCost}</span>
                   </div>
-                  <div className="breakdown-item final-total">
-                    <span>Customer Pays:</span>
-                    <span>€{result.deliveryFee}</span>
-                  </div>
+                  <div className="breakdown-item final-total"><span>Customer Pays:</span><span>€{result.deliveryFee}</span></div>
                 </div>
               </div>
             )}
-
-            {/* ── Save Quote Panel ── */}
             <div className="save-quote-panel">
               <h3>💾 Save This Quote</h3>
               {saveSuccess ? (
-                <div className="save-success">
-                  ✅ Quote saved! <button className="link-btn" onClick={() => setSaveSuccess(false)}>Save another</button>
-                </div>
+                <div className="save-success">✅ Quote saved! <button className="link-btn" onClick={() => setSaveSuccess(false)}>Save another</button></div>
               ) : (
                 <>
                   <p className="save-label">Give this quote a name before saving</p>
@@ -395,9 +365,7 @@ function App() {
                       onChange={(e) => setSaveName(e.target.value)}
                       placeholder='e.g. "Multy", "John - Site 3"'
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSaveQuote(); } }}
-                      autoComplete="off"
-                      autoCorrect="off"
-                      spellCheck="false"
+                      autoComplete="off" autoCorrect="off" spellCheck="false"
                     />
                     <button className="save-btn" onClick={handleSaveQuote}>Save</button>
                   </div>
@@ -409,43 +377,134 @@ function App() {
         )}
       </div>
 
-      {/* ── Pricing Formula (always visible) ── */}
-      <div className="formula-explanation">
-        <h3>Pricing Formula</h3>
+      {/* ── Price Bands Editor ── */}
+      <div className="bands-card">
+        <div className="bands-header">
+          <div>
+            <h2 className="bands-title">Pricing Formula</h2>
+            <p className="bands-subtitle">
+              {bandsLoading ? 'Loading from Shopify…' : 'Set your price bands below. Changes apply to this calculator and the Shopify checkout.'}
+            </p>
+          </div>
+          {bandsDirty && (
+            <div className="bands-save-area">
+              <button className="bands-save-btn" onClick={saveBandsToAPI} disabled={bandsSaving}>
+                {bandsSaving ? 'Saving…' : 'Save Changes'}
+              </button>
+              {bandsSaveSuccess && <span className="bands-saved-badge">✓ Saved</span>}
+              {bandsSaveError && <span className="bands-error-badge">{bandsSaveError}</span>}
+            </div>
+          )}
+          {!bandsDirty && bandsSaveSuccess && (
+            <span className="bands-saved-badge bands-saved-badge--idle">✓ Up to date</span>
+          )}
+        </div>
+
         {bandsLoading ? (
-          <p>Loading pricing...</p>
+          <div className="bands-loading">Loading current rates…</div>
         ) : (
           <>
-            {priceBands
-              .slice()
-              .sort((a, b) => a.minOrderTotal - b.minOrderTotal)
-              .map((band, i, arr) => {
-                const nextBand = arr[i + 1];
-                const label = nextBand
-                  ? `Orders €${band.minOrderTotal} – €${nextBand.minOrderTotal - 0.01}`
-                  : `Orders €${band.minOrderTotal}+`;
+            <div className="bands-table">
+              <div className="bands-table-head">
+                <span>Min order value (€)</span>
+                <span>Base fee (€)</span>
+                <span>Per km (€)</span>
+                <span>Preview</span>
+                <span></span>
+              </div>
+              {sortedBands.map((band, i) => {
+                const label = bandLabel(band, priceBands, config.freeDeliveryThreshold);
                 return (
-                  <div className="formula-box" key={i} style={{ marginBottom: '0.5rem' }}>
-                    <code>{label}: €{band.baseFee} + (distance × €{band.perKm}/km)</code>
+                  <div className="bands-table-row" key={i}>
+                    <div className="bands-field">
+                      <span className="bands-field-prefix">€</span>
+                      <input
+                        type="number"
+                        step="1"
+                        min="0"
+                        value={band.minOrderTotal}
+                        onChange={(e) => updateBand(i, 'minOrderTotal', e.target.value)}
+                        className="bands-input"
+                      />
+                    </div>
+                    <div className="bands-field">
+                      <span className="bands-field-prefix">€</span>
+                      <input
+                        type="number"
+                        step="0.50"
+                        min="0"
+                        value={band.baseFee}
+                        onChange={(e) => updateBand(i, 'baseFee', e.target.value)}
+                        className="bands-input"
+                      />
+                    </div>
+                    <div className="bands-field">
+                      <span className="bands-field-prefix">€</span>
+                      <input
+                        type="number"
+                        step="0.05"
+                        min="0"
+                        value={band.perKm}
+                        onChange={(e) => updateBand(i, 'perKm', e.target.value)}
+                        className="bands-input"
+                      />
+                    </div>
+                    <div className="bands-preview">
+                      <span className="bands-preview-label">{label}</span>
+                      <span className="bands-preview-formula">€{band.baseFee} + dist × €{band.perKm}/km</span>
+                    </div>
+                    <button
+                      className="bands-remove-btn"
+                      onClick={() => removeBand(i)}
+                      disabled={priceBands.length <= 1}
+                      title="Remove band"
+                    >
+                      ✕
+                    </button>
                   </div>
                 );
-              })
-            }
-            {config.freeDeliveryThreshold > 0 && (
-              <div className="formula-box">
-                <code>Orders €{config.freeDeliveryThreshold}+: Free delivery</code>
+              })}
+
+              {/* Free delivery row */}
+              <div className="bands-table-row bands-free-row">
+                <div className="bands-field">
+                  <span className="bands-field-prefix">€</span>
+                  <input
+                    type="number"
+                    step="1"
+                    min="0"
+                    value={config.freeDeliveryThreshold}
+                    onChange={(e) => updateFreeThreshold(e.target.value)}
+                    className="bands-input"
+                  />
+                </div>
+                <div className="bands-free-label" style={{ gridColumn: 'span 3' }}>
+                  <span className="bands-free-badge">FREE</span>
+                  <span>Free delivery — no charge</span>
+                  <span className="bands-field-hint">Set to 0 to disable free delivery</span>
+                </div>
+                <span></span>
               </div>
+            </div>
+
+            <div className="bands-footer">
+              <button className="bands-add-btn" onClick={addBand}>+ Add Band</button>
+              <button className="bands-reset-btn" onClick={resetToDefaults}>Reset to defaults</button>
+              {bandsDirty && (
+                <button className="bands-save-btn" onClick={saveBandsToAPI} disabled={bandsSaving}>
+                  {bandsSaving ? 'Saving…' : 'Save Changes'}
+                </button>
+              )}
+            </div>
+
+            {bandsDirty && (
+              <p className="bands-unsaved-note">You have unsaved changes — click Save Changes to apply to Shopify.</p>
             )}
           </>
         )}
-        {activeBand && orderValue > 0 && !result?.freeDelivery && (
-          <p className="formula-notes">
-            Active band for €{orderValue} order: €{activeBand.baseFee} base + €{activeBand.perKm}/km
-          </p>
-        )}
       </div>
 
-      {/* ── Saved Quotes Section ── */}
+      {/* ── Saved Quotes ── */}
       <button className="settings-toggle" onClick={() => setShowSaved(!showSaved)}>
         {showSaved ? '✕ Hide Saved Quotes' : `📋 Saved Quotes (${savedQuotes.length})`}
       </button>
@@ -474,10 +533,7 @@ function App() {
                           value={editingNameValue}
                           onChange={(e) => setEditingNameValue(e.target.value)}
                           onBlur={commitRename}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') commitRename();
-                            if (e.key === 'Escape') cancelRename();
-                          }}
+                          onKeyDown={(e) => { if (e.key === 'Enter') commitRename(); if (e.key === 'Escape') cancelRename(); }}
                           autoComplete="off"
                         />
                       ) : (
@@ -502,22 +558,12 @@ function App() {
                         <div>📍 {q.destination}</div>
                       )}
                     </div>
-                    {q.orderValue > 0 && (
-                      <div className="quote-row">
-                        <span>Order Value:</span><span>€{q.orderValue.toFixed(2)}</span>
-                      </div>
-                    )}
-                    <div className="quote-row">
-                      <span>Distance:</span><span>{q.distance} km ({q.duration} min)</span>
-                    </div>
+                    {q.orderValue > 0 && <div className="quote-row"><span>Order Value:</span><span>€{q.orderValue.toFixed(2)}</span></div>}
+                    <div className="quote-row"><span>Distance:</span><span>{q.distance} km ({q.duration} min)</span></div>
                     {q.breakdown && (
                       <>
-                        <div className="quote-row">
-                          <span>Base Fee:</span><span>€{q.breakdown.baseFee}</span>
-                        </div>
-                        <div className="quote-row">
-                          <span>Distance Cost:</span><span>€{q.breakdown.distanceCost}</span>
-                        </div>
+                        <div className="quote-row"><span>Base Fee:</span><span>€{q.breakdown.baseFee}</span></div>
+                        <div className="quote-row"><span>Distance Cost:</span><span>€{q.breakdown.distanceCost}</span></div>
                       </>
                     )}
                     <div className="quote-row quote-total">
@@ -532,109 +578,22 @@ function App() {
         </div>
       )}
 
-      <button
-        className="settings-toggle"
-        onClick={() => setShowSettings(!showSettings)}
-        style={{ marginTop: '0.5rem' }}
-      >
-        {showSettings ? '✕ Close Settings' : '⚙️ Edit Pricing Variables'}
+      {/* ── Settings (origin postcode only) ── */}
+      <button className="settings-toggle" onClick={() => setShowSettings(!showSettings)} style={{ marginTop: '0.5rem' }}>
+        {showSettings ? '✕ Close Settings' : '⚙️ Settings'}
       </button>
 
       {showSettings && (
         <div className="settings-panel">
-          <h2>Pricing Configuration</h2>
-          <div className="settings-grid">
-            <div className="setting-group">
-              <h3>Free Delivery</h3>
-              <div className="input-group">
-                <label>Free Delivery Threshold (€)</label>
-                <input
-                  type="number"
-                  step="1"
-                  value={config.freeDeliveryThreshold}
-                  onChange={(e) => updateConfig('freeDeliveryThreshold', e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="setting-group">
-              <h3>Price Bands</h3>
-              <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.75rem' }}>
-                Each band applies when the order total is at or above the minimum. The highest matching band wins.
-              </p>
-              {priceBands
-                .slice()
-                .sort((a, b) => a.minOrderTotal - b.minOrderTotal)
-                .map((band, i) => (
-                  <div key={i} className="band-row" style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-                    <div className="input-group" style={{ flex: '1', minWidth: '120px' }}>
-                      <label>Min order (€)</label>
-                      <input
-                        type="number"
-                        step="1"
-                        min="0"
-                        value={band.minOrderTotal}
-                        onChange={(e) => updateBand(i, 'minOrderTotal', e.target.value)}
-                      />
-                    </div>
-                    <div className="input-group" style={{ flex: '1', minWidth: '100px' }}>
-                      <label>Base fee (€)</label>
-                      <input
-                        type="number"
-                        step="0.50"
-                        min="0"
-                        value={band.baseFee}
-                        onChange={(e) => updateBand(i, 'baseFee', e.target.value)}
-                      />
-                    </div>
-                    <div className="input-group" style={{ flex: '1', minWidth: '100px' }}>
-                      <label>Per km (€)</label>
-                      <input
-                        type="number"
-                        step="0.05"
-                        min="0"
-                        value={band.perKm}
-                        onChange={(e) => updateBand(i, 'perKm', e.target.value)}
-                      />
-                    </div>
-                    {priceBands.length > 1 && (
-                      <button
-                        onClick={() => removeBand(i)}
-                        style={{ padding: '0.4rem 0.75rem', background: '#c0392b', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                        title="Remove band"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                ))}
-              <button
-                onClick={addBand}
-                style={{ padding: '0.4rem 1rem', background: '#2d5016', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', marginBottom: '1rem' }}
-              >
-                + Add Band
-              </button>
-            </div>
-          </div>
-
-          <div className="settings-actions" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <button
-              className="calculate-btn"
-              onClick={saveBandsToAPI}
-              disabled={bandsSaving}
-              style={{ flex: 'none' }}
-            >
-              {bandsSaving ? 'Saving...' : 'Save to Shopify & API'}
-            </button>
-            <button className="reset-btn" onClick={resetToDefaults}>
-              Reset to Defaults
-            </button>
-            {bandsSaveSuccess && <span style={{ color: '#2d5016', fontWeight: 600 }}>✅ Saved!</span>}
-            {bandsSaveError && <span style={{ color: '#c0392b' }}>{bandsSaveError}</span>}
-          </div>
-
-          <div className="settings-info">
-            <p><strong>Note:</strong> Click "Save to Shopify & API" to apply bands to the Shopify checkout. Changes take effect immediately.</p>
+          <h2>Settings</h2>
+          <div className="input-group">
+            <label>Origin Postcode (Yard)</label>
+            <input
+              type="text"
+              value={originAddress}
+              onChange={(e) => { setOriginAddress(e.target.value); setConfig(prev => ({ ...prev, originPostcode: e.target.value })); }}
+              placeholder="N91PT7W"
+            />
           </div>
         </div>
       )}

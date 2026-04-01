@@ -382,6 +382,299 @@ h1 {
 }
 
 /* ─────────────────────────────────────────
+   Price Bands Editor
+───────────────────────────────────────── */
+.bands-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.bands-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.bands-title {
+  color: var(--primary);
+  font-size: 1.6rem;
+  margin-bottom: 0.25rem;
+}
+
+.bands-subtitle {
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.bands-save-area {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.bands-save-btn {
+  padding: 0.6rem 1.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: white;
+  background: var(--primary);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.bands-save-btn:hover:not(:disabled) {
+  background: var(--primary-light);
+}
+
+.bands-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bands-saved-badge {
+  color: var(--success);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.bands-saved-badge--idle {
+  color: var(--text-light);
+  font-weight: 400;
+}
+
+.bands-error-badge {
+  color: var(--error);
+  font-size: 0.85rem;
+}
+
+.bands-loading {
+  color: var(--text-light);
+  font-style: italic;
+  padding: 1rem 0;
+}
+
+.bands-table {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.bands-table-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 2fr 2rem;
+  gap: 0;
+  background: #f1f5f1;
+  padding: 0.6rem 1rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+}
+
+.bands-table-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 2fr 2rem;
+  gap: 0;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+.bands-table-row:last-child {
+  border-bottom: none;
+}
+
+.bands-table-row:hover {
+  background: #fafcfa;
+}
+
+.bands-free-row {
+  background: #f0fdf4;
+}
+
+.bands-free-row:hover {
+  background: #e6f9ec;
+}
+
+.bands-field {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding-right: 0.75rem;
+}
+
+.bands-field-prefix {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  padding: 0.4rem 0.3rem 0.4rem 0.5rem;
+  background: #f5f5f5;
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  line-height: 1;
+}
+
+.bands-input {
+  width: 80px;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: 0 6px 6px 0;
+  transition: border-color 0.2s;
+  background: white;
+}
+
+.bands-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(45, 80, 22, 0.1);
+}
+
+.bands-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-right: 0.5rem;
+}
+
+.bands-preview-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.bands-preview-formula {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  font-family: 'Monaco', 'Courier New', monospace;
+}
+
+.bands-free-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.bands-free-badge {
+  background: var(--success);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+.bands-field-hint {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  font-style: italic;
+}
+
+.bands-remove-btn {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0.2rem;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  line-height: 1;
+}
+
+.bands-remove-btn:hover:not(:disabled) {
+  color: var(--error);
+  background: #fee;
+}
+
+.bands-remove-btn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+.bands-footer {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.bands-add-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: white;
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.bands-add-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.bands-reset-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: var(--text-light);
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.bands-reset-btn:hover {
+  border-color: var(--error);
+  color: var(--error);
+}
+
+.bands-unsaved-note {
+  margin-top: 0.75rem;
+  font-size: 0.82rem;
+  color: var(--accent);
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  .bands-table-head {
+    display: none;
+  }
+
+  .bands-table-row {
+    grid-template-columns: 1fr 1fr 1fr 2rem;
+    row-gap: 0.5rem;
+  }
+
+  .bands-preview {
+    grid-column: 1 / -2;
+    padding-right: 0;
+  }
+
+  .bands-free-row .bands-free-label {
+    grid-column: 1 / -2;
+  }
+}
+
+/* ─────────────────────────────────────────
    Save Quote Panel
 ───────────────────────────────────────── */
 .save-quote-panel {

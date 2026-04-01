@@ -675,6 +675,99 @@ h1 {
 }
 
 /* ─────────────────────────────────────────
+   Westmeath Town Reference Table
+───────────────────────────────────────── */
+.towns-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.towns-title {
+  color: var(--primary);
+  font-size: 1.6rem;
+  margin-bottom: 0.25rem;
+}
+
+.towns-subtitle {
+  color: var(--text-light);
+  font-size: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.towns-table-wrap {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.towns-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.towns-table thead tr {
+  background: #f1f5f1;
+}
+
+.towns-table th {
+  padding: 0.65rem 1rem;
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  border-bottom: 2px solid var(--border);
+}
+
+.towns-table th:not(:first-child) {
+  text-align: right;
+}
+
+.towns-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+}
+
+.towns-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.towns-table tbody tr:hover {
+  background: #f7faf7;
+}
+
+.towns-table td {
+  padding: 0.6rem 1rem;
+  color: var(--text);
+}
+
+.towns-km {
+  text-align: right;
+  color: var(--text-light);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.towns-price {
+  text-align: right;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.towns-free {
+  text-align: right;
+  font-weight: 700;
+  color: var(--success);
+  letter-spacing: 0.03em;
+}
+
+/* ─────────────────────────────────────────
    Save Quote Panel
 ───────────────────────────────────────── */
 .save-quote-panel {

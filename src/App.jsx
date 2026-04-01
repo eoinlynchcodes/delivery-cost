@@ -19,6 +19,31 @@ function selectBand(bands, orderValue) {
   return sorted.find(b => total >= b.minOrderTotal) ?? sorted[sorted.length - 1];
 }
 
+const WESTMEATH_TOWNS = [
+  { name: 'Greenpark',       km: 3  },
+  { name: 'Ardmore Road',    km: 4  },
+  { name: 'Mullingar Town',  km: 3  },
+  { name: 'Loughanavally',   km: 9  },
+  { name: 'Multyfarnham',    km: 11 },
+  { name: 'Glasson',         km: 14 },
+  { name: 'Killucan',        km: 14 },
+  { name: 'Rathowen',        km: 16 },
+  { name: 'Ballymore',       km: 16 },
+  { name: 'Collinstown',     km: 18 },
+  { name: 'Streamstown',     km: 20 },
+  { name: 'Castlepollard',   km: 21 },
+  { name: 'Kinnegad',        km: 21 },
+  { name: 'Fore',            km: 22 },
+  { name: 'Delvin',          km: 22 },
+  { name: 'Tang',            km: 22 },
+  { name: 'Rochfortbridge',  km: 26 },
+  { name: 'Milltownpass',    km: 27 },
+  { name: 'Moate',           km: 28 },
+  { name: 'Tyrellspass',     km: 28 },
+  { name: 'Kilbeggan',       km: 31 },
+  { name: 'Athlone',         km: 35 },
+];
+
 function bandLabel(band, allBands, freeThreshold) {
   const sorted = [...allBands].sort((a, b) => a.minOrderTotal - b.minOrderTotal);
   const idx = sorted.findIndex(b => b.minOrderTotal === band.minOrderTotal);
@@ -503,6 +528,57 @@ function App() {
           </>
         )}
       </div>
+
+      {/* ── Westmeath Delivery Reference ── */}
+      {!bandsLoading && (
+        <div className="towns-card">
+          <h2 className="towns-title">Westmeath Delivery Reference</h2>
+          <p className="towns-subtitle">
+            Approximate prices from Mullingar (Ballinea). Actual checkout price is calculated by Google Maps.
+          </p>
+          <div className="towns-table-wrap">
+            <table className="towns-table">
+              <thead>
+                <tr>
+                  <th>Town / Area</th>
+                  <th>~km</th>
+                  {sortedBands.map((band, i) => {
+                    const next = sortedBands[i + 1];
+                    const upper = next
+                      ? `–€${(next.minOrderTotal - 1).toFixed(0)}`
+                      : config.freeDeliveryThreshold > 0
+                        ? `–€${(config.freeDeliveryThreshold - 1).toFixed(0)}`
+                        : '+';
+                    return (
+                      <th key={i}>
+                        Orders €{band.minOrderTotal}{upper}
+                      </th>
+                    );
+                  })}
+                  {config.freeDeliveryThreshold > 0 && (
+                    <th>€{config.freeDeliveryThreshold}+</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {WESTMEATH_TOWNS.map(town => (
+                  <tr key={town.name}>
+                    <td>{town.name}</td>
+                    <td className="towns-km">{town.km} km</td>
+                    {sortedBands.map((band, i) => {
+                      const cost = band.baseFee + town.km * band.perKm;
+                      return <td key={i} className="towns-price">€{cost.toFixed(2)}</td>;
+                    })}
+                    {config.freeDeliveryThreshold > 0 && (
+                      <td className="towns-free">FREE</td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* ── Saved Quotes ── */}
       <button className="settings-toggle" onClick={() => setShowSaved(!showSaved)}>

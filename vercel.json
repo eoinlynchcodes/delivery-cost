@@ -3,6 +3,10 @@
     {
       "source": "/api/distance",
       "destination": "/api/distance.js"
+    },
+    {
+      "source": "/api/widget-calculate",
+      "destination": "/api/widget-calculate.js"
     }
   ]
 }
